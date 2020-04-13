@@ -9,9 +9,23 @@ import imageio
 import math
 from tqdm import tqdm
 
+# list of camera angles in pairs (x, y) where x and y are the angles to rotate around the x and y axis
+camera_angles = [
+    (0, -90),  # x view
+    (-90, 0),  # y view
+    (0, 0),    # z view
+]
+
 # change these directories if you want
 in_dir = "chairs/models/"
 out_dir = "chairs/images/"
+
+# fix paths
+if in_dir[-1] != "/":
+    in_dir = in_dir + "/"
+
+if out_dir[-1] != "/":
+    out_dir = out_dir + "/"
 
 
 def normalize(buffer):  # this is currently not being used
@@ -58,46 +72,45 @@ def get_image_array(model_path, camera_pose):
     return depth_uint8
 
 
-# a rotation and a translation one unit back
-x_pose = np.array([
-    [0, 0, -1, -1],
-    [0, 1, 0, 0],
-    [1, 0, 0, 0],
-    [0, 0, 0, 1],
-])
+def get_camera_transformation(x_angle, y_angle):
+    x_angle = math.radians(x_angle)
+    y_angle = math.radians(y_angle)
 
-y_pose = np.array([
-    [1, 0, 0, 0],
-    [0, 0, 1, 1],
-    [0, -1, 0, 0],
-    [0, 0, 0, 1],
-])
+    # translates 1 unit back
+    translation = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 1],
+        [0, 0, 0, 1]
+    ])
 
-z_pose = np.array([
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 1],
-    [0, 0, 0, 1],
-])
+    # x_angle is the angle to rotate around the x axis
+    x_axis_rotation = np.array([
+        [1, 0, 0, 0],
+        [0, math.cos(x_angle), -math.sin(x_angle), 0],
+        [0, math.sin(x_angle), math.cos(x_angle), 0],
+        [0, 0, 0, 1]
+    ])
 
-if in_dir[-1] != "/":
-    in_dir = in_dir + "/"
+    # y_angle is the angle to rotate around the y axis
+    y_axis_rotation = np.array([
+        [math.cos(y_angle), 0, math.sin(y_angle), 0],
+        [0, 1, 0, 0],
+        [-math.sin(y_angle), 0, math.cos(y_angle), 0],
+        [0, 0, 0, 1]
+    ])
 
-if out_dir[-1] != "/":
-    out_dir = out_dir + "/"
+    return y_axis_rotation.dot(x_axis_rotation).dot(translation)
+
 
 for filename in tqdm(os.listdir(in_dir)):
-    imageio.imwrite(
-        out_dir + filename[0:filename.index(".")] + "_x.png",
-        get_image_array(in_dir + filename, x_pose)
-    )
+    for i in range(len(camera_angles)):
+        x_angle, y_angle = camera_angles[i]
 
-    imageio.imwrite(
-        out_dir + filename[0:filename.index(".")] + "_y.png",
-        get_image_array(in_dir + filename, y_pose)
-    )
+        in_path = in_dir + filename
+        out_path = out_dir + filename[0:filename.index(".")] + "_" + str(i) + ".png"
 
-    imageio.imwrite(
-        out_dir + filename[0:filename.index(".")] + "_z.png",
-        get_image_array(in_dir + filename, z_pose)
-    )
+        imageio.imwrite(
+            out_path,
+            get_image_array(in_path, get_camera_transformation(x_angle, y_angle))
+        )
