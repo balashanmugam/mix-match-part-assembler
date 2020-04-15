@@ -1,23 +1,32 @@
-# must install osmesa to run this script
 import os
 os.environ["PYOPENGL_PLATFORM"] = "osmesa"
 
-import numpy as np
-import trimesh
-import pyrender
-import imageio
-import math
+from joblib import Parallel, delayed
+import multiprocessing
 from tqdm import tqdm
+import math
+import imageio
+import pyrender
+import trimesh
+import numpy as np
+
+
+num_cores = multiprocessing.cpu_count()
+
+resolution = 64
 
 # list of camera angles in pairs (x, y) where x and y are the angles to rotate around the x and y axis
 camera_angles = [
-    (0, -90),  # x view
-    (-90, 0),  # y view
-    (0, 0),    # z view
+    (-15, 30),  # 0
+    (-15, 60),  # 1
+    (-15, 0),  # 2
+    (-15, -30),  # 3
+    (-15, -60),  # 4
+    (-15, 180)  # 5
 ]
 
 # change these directories if you want
-in_dir = "chairs/models/"
+in_dir = "all-chairs/models/"
 out_dir = "chairs/images/"
 
 # fix paths
@@ -56,6 +65,7 @@ def fitted_normalize(buffer):
 
 
 def get_image_array(model_path, camera_pose):
+
     mesh = pyrender.Mesh.from_trimesh(trimesh.load(model_path))
 
     camera = pyrender.OrthographicCamera(xmag=1.0, ymag=1.0)
@@ -64,7 +74,7 @@ def get_image_array(model_path, camera_pose):
     scene.add(mesh)
     scene.add(camera, pose=camera_pose)
 
-    renderer = pyrender.OffscreenRenderer(512, 512)
+    renderer = pyrender.OffscreenRenderer(resolution, resolution)
     color, depth = renderer.render(scene)
 
     depth_uint8 = (fitted_normalize(depth) * 255).astype(np.uint8)
@@ -103,14 +113,23 @@ def get_camera_transformation(x_angle, y_angle):
     return y_axis_rotation.dot(x_axis_rotation).dot(translation)
 
 
-for filename in tqdm(os.listdir(in_dir)):
+def parallel_function(filename):
     for i in range(len(camera_angles)):
         x_angle, y_angle = camera_angles[i]
 
         in_path = in_dir + filename
-        out_path = out_dir + filename[0:filename.index(".")] + "_" + str(i) + ".png"
+        out_path = out_dir + \
+            filename[0:filename.index(".")] + "_" + str(i) + ".png"
 
         imageio.imwrite(
             out_path,
-            get_image_array(in_path, get_camera_transformation(x_angle, y_angle))
+            get_image_array(
+                in_path, get_camera_transformation(x_angle, y_angle))
         )
+
+
+l = tqdm(os.listdir(in_dir))
+
+if __name__ == "__main__":
+    processed_list = Parallel(n_jobs=num_cores)(
+        delayed(parallel_function)(i) for i in l)
