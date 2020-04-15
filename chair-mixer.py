@@ -2,7 +2,9 @@ import os
 import json
 import trimesh
 import trimesh.util
+import trimesh.transformations
 import random
+import numpy as np
 from tqdm import tqdm
 
 in_dir = "chairs/segmented/"
@@ -44,19 +46,36 @@ def get_part_mesh(part_name, chair_path):
 
 
 for i in tqdm(range(0, 10)):
-    meshes = [
-        get_part_mesh(
-            "Chair Base",
-            chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
-        ),
-        get_part_mesh(
-            "Chair Back",
-            chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
-        ),
-        get_part_mesh(
-            "Chair Seat",
-            chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
-        )
-    ]
+    back_scale = (random.random() - 0.5) / 2 + 1
+    back_translation = (0, (random.random() - 0.5) / 2,
+                        (random.random() - 0.5) / 2)
 
-    trimesh.util.concatenate(meshes).export(out_dir + str(i) + ".obj")
+    base_scale = (random.random() - 0.5) / 2 + 1
+    base_translation = (0, (random.random() - 0.5) / 2,
+                        (random.random() - 0.5) / 2)
+
+    back_mesh = get_part_mesh(
+        "Chair Back",
+        chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
+    )
+    back_mesh.apply_scale((random.random() - 0.5) / 2 + 1)
+    back_mesh.apply_translation(
+        back_scale
+    )
+
+    base_mesh = get_part_mesh(
+        "Chair Base",
+        chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
+    )
+    base_mesh.apply_scale((random.random() - 0.5) / 2 + 1)
+    base_mesh.apply_translation(
+        (0, (random.random() - 0.5) / 2, (random.random() - 0.5) / 2)
+    )
+
+    seat_mesh = get_part_mesh(
+        "Chair Seat",
+        chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
+    )
+
+    mesh = trimesh.util.concatenate([base_mesh, back_mesh, seat_mesh])
+    mesh.export(out_dir + str(i) + ".obj")
