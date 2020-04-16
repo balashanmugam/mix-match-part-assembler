@@ -50,6 +50,54 @@ def get_part_mesh(part_name, chair_path):
 
             return mesh
 
+def fix_chair_transforms(back_mesh,base_mesh,seat_mesh):
+    # Allign X and Z coordinates of base to seat
+    base_mesh_middle_point = ((base_mesh.bounds[0] + base_mesh.bounds[1]) / 2)
+    seat_mesh_middle_point = ((seat_mesh.bounds[0] + seat_mesh.bounds[1]) / 2)
+    dist_middle_points = seat_mesh_middle_point - base_mesh_middle_point
+
+    # Delta Y
+    base_translation = (dist_middle_points[0], - base_mesh.bounds[1][1] + seat_mesh.bounds[0][1] + 0.04, dist_middle_points[2])
+    base_mesh.apply_translation(base_translation)
+
+    # Lower back part
+    back_translation = 0, - back_mesh.bounds[0][1] + seat_mesh.bounds[1][1] - 0.04, 0
+    back_mesh.apply_translation(back_translation)
+
+def fix_chair_scale(back_mesh, base_mesh, seat_mesh):
+    delta_xz_seat = seat_mesh.bounds[1] - seat_mesh.bounds[0]
+    delta_xz_base = base_mesh.bounds[1] - base_mesh.bounds[0]
+    scale = delta_xz_seat / delta_xz_base
+
+    scale_translation_matrix = np.array([
+        [scale[0], 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, scale[2], 0],
+        [0, 0, 0, 1]
+    ])
+    base_mesh.apply_transform(scale_translation_matrix)
+
+def break_chairs(back_mesh, base_mesh, seat_mesh):
+    back_scale = (random.random() - 0.5) / 1.5 + 1
+    back_translation = (0, (random.random() - 0.5) / 2,
+                        (random.random() - 0.5) / 2)
+    back_rotation = trimesh.transformations.rotation_matrix(
+        math.radians((random.random() - 0.5) * 60),
+        (1, 0, 0),
+        trimesh.bounds.corners(back_mesh.bounds)[0]
+    )
+
+    base_scale = (random.random() - 0.5) / 1.5 + 1
+    base_translation = (0, (random.random() - 0.5) / 2,
+                        (random.random() - 0.5) / 2)
+
+    back_mesh.apply_scale(back_scale)
+    back_mesh.apply_translation(back_translation)
+    back_mesh.apply_transform(back_rotation)
+
+    base_mesh.apply_scale(base_scale)
+    base_mesh.apply_translation(base_translation)
+
 
 def create_chair(name):
     back_mesh = get_part_mesh(
@@ -64,39 +112,9 @@ def create_chair(name):
         "Chair Seat",
         chair_dir_paths[random.randint(0, len(chair_dir_paths) - 1)]
     )
-
-    print(base_mesh.bounds)
-    print(seat_mesh.bounds)
-    print(base_mesh.bounds[1][1] - seat_mesh.bounds[0][1])
-    base_mesh_middle_point = ((base_mesh.bounds[0] + base_mesh.bounds[1]) / 2)
-    seat_mesh_middle_point = ((seat_mesh.bounds[0] + seat_mesh.bounds[1]) / 2)
-    dist_middle_points = seat_mesh_middle_point - base_mesh_middle_point
-    base_translation = (dist_middle_points[0], - base_mesh.bounds[1][1] + seat_mesh.bounds[0][1] + 0.04, dist_middle_points[2])
-    #base_translation = (0, - base_mesh.bounds[1][1] + seat_mesh.bounds[0][1] + 0.04 , -0.05)
-
-    base_mesh.apply_translation(base_translation)
-
-    #TODO: Add fix back_mesh transform to attach seat_mesh
-
-    # back_scale = (random.random() - 0.5) / 1.5 + 1
-    # back_translation = (0, (random.random() - 0.5) / 2,
-    #                     (random.random() - 0.5) / 2)
-    # back_rotation = trimesh.transformations.rotation_matrix(
-    #     math.radians((random.random() - 0.5) * 60),
-    #     (1, 0, 0),
-    #     trimesh.bounds.corners(back_mesh.bounds)[0]
-    # )
-    #
-    # base_scale = (random.random() - 0.5) / 1.5 + 1
-    # base_translation = (0, (random.random() - 0.5) / 2,
-    #                     (random.random() - 0.5) / 2)
-    #
-    # back_mesh.apply_scale(back_scale)
-    # back_mesh.apply_translation(back_translation)
-    # back_mesh.apply_transform(back_rotation)
-    #
-    # base_mesh.apply_scale(base_scale)
-    # base_mesh.apply_translation(base_translation)
+    #fix_chair_transforms(back_mesh,base_mesh,seat_mesh)
+    #fix_chair_scale(back_mesh,base_mesh,seat_mesh)
+    break_chairs(back_mesh,base_mesh,seat_mesh)
 
     mesh = trimesh.util.concatenate([base_mesh, back_mesh, seat_mesh])
     mesh.export(out_dir + name + ".obj")
