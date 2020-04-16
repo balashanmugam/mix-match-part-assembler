@@ -26,26 +26,25 @@ def load(dimension):
     labels = [[]]
 
     ls = 0
-
-    # change directory and add negative directories
-    for id, folder in enumerate(["./ImageGeneration/images/"]):
+    
+    for id, folder in enumerate(["./Data/data/good/", "./Data/data/bad1/"]):
         isPositive = not isPositive
 
         length = len(os.listdir(folder)) // VIEWS
         ls += length
 
-        for filename in os.listdir(folder):
-            #print(filename)
+        files = os.listdir((folder))
+        files = sorted(files)
+        #print(files)
+    
+        for filename in files:
+
             view = int(filename.split("_")[1].split('.')[0])
             view = view % VIEWS
-            img = cv2.imread(folder+filename)
-            if dimension < 224:
-                img = cv2.resize(img, dsize=(dimension, dimension),
-                                 interpolation=cv2.INTER_CUBIC)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            img = np.nan_to_num(img)
+
+            img = cv2.imread(folder+filename,cv2.IMREAD_GRAYSCALE)
+ 
             if img is not None:
-                # images[view].append(1. - img / 255.)
                 if view == 0:
                     images0.append(1. - img / 255.)
                 elif view == 1:
@@ -106,13 +105,13 @@ def load(dimension):
     return images, labels
 
 
-def runtime_load_test():
-    import time
-    start_time = time.time()
-    images, labels = load(56)
-    print("--- %s min ---" % ((time.time() - start_time) / 60))
-    #print(imagesTop.shape[0])
+# def runtime_load_test():
+#     import time
+#     start_time = time.time()
+#     images, labels = load(56)
+#     print("--- %s min ---" % ((time.time() - start_time) / 60))
+#     #print(imagesTop.shape[0])
 
 
-#images0, images1, images2, images3, images4, images5, labels = load(224)
+#images, labels = load(64)
 #print(images0)

@@ -59,6 +59,7 @@ def train(image, label):  # image contains 6 views in a list
     with tf.GradientTape() as tape:
         preds = model.call(image)
         loss = loss_object(label, preds)
+    #(preds)
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
     train_loss(loss)
@@ -101,7 +102,7 @@ for e in range(EPOCH):
         label_data = tf.convert_to_tensor(test_label[i],dtype=tf.float32)
         label_data = tf.reshape(label_data,(1,2))
 
-        test(train_data,label_data)
+        test(test_data,label_data)
 
     template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
     print(template.format(e + 1,
