@@ -1,15 +1,14 @@
-import os
-#os.environ["PYOPENGL_PLATFORM"] = "osmesa"
-
-import numpy as np
-import trimesh
-import pyrender
-import imageio
-import math
-from tqdm import tqdm
-
-import multiprocessing
 from joblib import Parallel, delayed
+import multiprocessing
+from tqdm import tqdm
+import math
+import imageio
+import pyrender
+import trimesh
+import numpy as np
+import os
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"
+
 
 num_cores = multiprocessing.cpu_count()
 
@@ -20,7 +19,7 @@ camera_angles = [
     (-15, 0),  # 2
     (-15, -30),  # 3
     (-15, -60),  # 4
-    (-15, 180) # 5
+    (-15, 180)  # 5
     # z view
 ]
 
@@ -111,19 +110,23 @@ def get_camera_transformation(x_angle, y_angle):
 
     return y_axis_rotation.dot(x_axis_rotation).dot(translation)
 
+
 def parallel_function(filename):
     for i in range(len(camera_angles)):
         x_angle, y_angle = camera_angles[i]
 
         in_path = in_dir + filename
-        out_path = out_dir + filename[0:filename.index(".")] + "_" + str(i) + ".png"
+        out_path = out_dir + \
+            filename[0:filename.index(".")] + "_" + str(i) + ".png"
 
         imageio.imwrite(
             out_path,
-            get_image_array(in_path, get_camera_transformation(x_angle, y_angle))
+            get_image_array(
+                in_path, get_camera_transformation(x_angle, y_angle))
         )
-        
+
 
 l = tqdm(os.listdir(in_dir))
 if __name__ == "__main__":
-    processed_list = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i) for i in l)
+    processed_list = Parallel(n_jobs=num_cores)(
+        delayed(parallel_function)(i) for i in l)
