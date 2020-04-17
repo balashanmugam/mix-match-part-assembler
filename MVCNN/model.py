@@ -2,7 +2,7 @@
 # available at https://github.com/kamalkraj/Tensorflow-Paper-Implementation
 # this is an implementation of Lenet http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf
 # The basic idea to combine three classifiers, one for each view, was extracted from Zhu et al. https://www.sfu.ca/~cza68/papers/zhu_sig17_scsr.pdf
-from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, BatchNormalization, AveragePooling2D, Dropout, GlobalAveragePooling2D, Softmax
+from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, BatchNormalization, AveragePooling2D, Dropout, GlobalAveragePooling2D, Softmax, Conv2DTranspose
 import keras
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
@@ -36,7 +36,9 @@ class vgg(Model):
             3, 3), padding='same', activation='relu')
         self.c6 = Conv2D(filters=256, kernel_size=(
             3, 3), padding='same', activation='relu')
-        self.c7 = Conv2D(filters=256, kernel_size=(
+
+
+        self.c7 = Conv2DTranspose(filters=128, kernel_size=(
             3, 3), padding='same', activation='relu')
 
         self.flat = Flatten()
@@ -53,10 +55,10 @@ class vgg(Model):
         x = self.mp(x)
         #print(x.shape)
 
+
         x = self.c5(x)
         x = self.c6(x)
         x = self.c7(x)
-        x = self.mp(x)
         #print(x.shape)
 
         x = self.flat(x)
@@ -113,6 +115,3 @@ class mvcnn(Model):
         out = self.soft(out)
         #print('Final: ',out[0])
         return out
-
-
-

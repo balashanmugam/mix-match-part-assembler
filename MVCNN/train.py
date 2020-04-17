@@ -58,7 +58,6 @@ test_loss = tf.keras.metrics.Mean(name='test_loss')
 test_accuracy = tf.keras.metrics.CategoricalAccuracy(
     name='test_accuracy')
 
-
 @tf.function
 def train(image, label):  # image contains 6 views in a list
     with tf.GradientTape() as tape:
@@ -70,7 +69,6 @@ def train(image, label):  # image contains 6 views in a list
     train_loss(loss)
     train_accuracy(label, preds)
 
-
 @tf.function
 def test(image, label):
   # training=False is only needed if there are layers with different
@@ -81,7 +79,7 @@ def test(image, label):
   test_loss(t_loss)
   test_accuracy(label, preds)
 
-EPOCH = 5 
+EPOCH = 10
 w = 0
 for e in range(EPOCH):
     train_loss.reset_states()
@@ -94,7 +92,8 @@ for e in range(EPOCH):
                    train3[i], train4[i], train5[i]]
         train_data = tf.convert_to_tensor(train_s, dtype=tf.float32)
         label_data = tf.convert_to_tensor(train_label[i],dtype=tf.float32)
-        print(label_data)
+        
+        #print(label_data)
         label_data = tf.reshape(label_data,(1,2))
 
         train(train_data,label_data)
@@ -110,7 +109,7 @@ for e in range(EPOCH):
         test(test_data,label_data)
 
     template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
-    if (e+1) % 3 == 0:
+    if (e+1) % 5 == 0:
         #save weights
         cpt = "./Checkpoints/model_weights_cp_" + str(w)+ ".h5"
         w = w + 1

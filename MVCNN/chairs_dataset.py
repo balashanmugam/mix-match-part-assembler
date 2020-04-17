@@ -27,7 +27,7 @@ def load(dimension):
 
     ls = 0
     
-    for id, folder in enumerate(["./Data/data/good/", "./Data/data/bad1/"]):
+    for id, folder in enumerate(["./Data/data/good1/", "./Data/data/bad1/"]):
         isPositive = not isPositive
 
         length = len(os.listdir(folder)) // VIEWS
@@ -46,17 +46,17 @@ def load(dimension):
  
             if img is not None:
                 if view == 0:
-                    images0.append(1. - img / 255.)
+                    images0.append(img / 255.)
                 elif view == 1:
-                    images1.append(1. - img / 255.)
+                    images1.append(img / 255.)
                 elif view == 2:
-                    images2.append(1. - img / 255.)
+                    images2.append(img / 255.)
                 elif view == 3:
-                    images3.append(1. - img / 255.)
+                    images3.append(img / 255.)
                 elif view == 4:
-                    images4.append(1. - img / 255.)
+                    images4.append(img / 255.)
                 else:
-                    images5.append(1. - img / 255.)
+                    images5.append(img / 255.)
 
                 if isPositive:
                     #print("Label added:", filename)
