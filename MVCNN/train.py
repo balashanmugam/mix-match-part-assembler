@@ -37,20 +37,25 @@ test3 = i3[sliceId:]
 test4 = i4[sliceId:]
 test5 = i5[sliceId:]
 
+# print(len(test5))
+
 test_label = labels[sliceId:]
+
+# print(sliceId)
+# print(dataset_length -sliceId)
 
 # model
 model = model.mvcnn()
 
-loss_object = tf.keras.losses.BinaryCrossentropy()
+loss_object = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
 optimizer = tf.keras.optimizers.Adam(lr=0.001)
 
 train_loss = tf.keras.metrics.Mean(name='train_loss')
-train_accuracy = tf.keras.metrics.BinaryAccuracy(
+train_accuracy = tf.keras.metrics.CategoricalAccuracy(
     name='train_accuracy')
 
 test_loss = tf.keras.metrics.Mean(name='test_loss')
-test_accuracy = tf.keras.metrics.BinaryAccuracy(
+test_accuracy = tf.keras.metrics.CategoricalAccuracy(
     name='test_accuracy')
 
 
@@ -76,20 +81,20 @@ def test(image, label):
   test_loss(t_loss)
   test_accuracy(label, preds)
 
-
-EPOCH = 5
-
+EPOCH = 5 
+w = 0
 for e in range(EPOCH):
     train_loss.reset_states()
     train_accuracy.reset_states()
     test_loss.reset_states()
     test_accuracy.reset_states()
 
-    for i in range(0, sliceId):
+    for i in range(0, sliceId-1):
         train_s = [train0[i], train1[i], train2[i],
                    train3[i], train4[i], train5[i]]
         train_data = tf.convert_to_tensor(train_s, dtype=tf.float32)
         label_data = tf.convert_to_tensor(train_label[i],dtype=tf.float32)
+        print(label_data)
         label_data = tf.reshape(label_data,(1,2))
 
         train(train_data,label_data)
@@ -105,6 +110,13 @@ for e in range(EPOCH):
         test(test_data,label_data)
 
     template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
+    if (e+1) % 3 == 0:
+        #save weights
+        cpt = "./Checkpoints/model_weights_cp_" + str(w)+ ".h5"
+        w = w + 1
+        weights = model.save_weights(cpt)
+        print("Saving weight:",w)
+        
     print(template.format(e + 1,
                           train_loss.result(),
                           train_accuracy.result() * 100,
