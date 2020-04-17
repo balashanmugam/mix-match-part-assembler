@@ -1,6 +1,7 @@
 import cv2
 import os
 import numpy as np
+import tensorflow as tf
 
 '''
 load chair dataset. Dimension refers to the target dimension of the output image, used to save up memory.
@@ -10,7 +11,6 @@ There are opportunities to improve the dataset by performing image operations to
 more negative samples based on the given meshes.
 '''
 VIEWS = 6  # Total views
-
 
 def load(dimension):
     # list for each view
@@ -23,27 +23,32 @@ def load(dimension):
 
     isPositive = False
 
-    labels = [[]]
+    labels0 = []
+    labels1 = []
+    labels2 = []
+    labels3 = []
+    labels4 = []
+    labels5 = []
 
     ls = 0
-    
-    for id, folder in enumerate(["./Data/data/good/", "./Data/data/bad1/"]):
+
+    for id, folder in enumerate(["./Data/data/good/", "./Data/data/bad/"]):
         isPositive = not isPositive
 
-        length = len(os.listdir(folder)) // VIEWS
+        length = (len(os.listdir(folder)) // VIEWS ) 
         ls += length
 
         files = os.listdir((folder))
         files = sorted(files)
         #print(files)
-    
+
         for filename in files:
 
             view = int(filename.split("_")[1].split('.')[0])
             view = view % VIEWS
 
-            img = cv2.imread(folder+filename,cv2.IMREAD_GRAYSCALE)
- 
+            img = cv2.imread(folder+filename, cv2.IMREAD_GRAYSCALE)
+
             if img is not None:
                 if view == 0:
                     images0.append(1. - img / 255.)
@@ -58,13 +63,24 @@ def load(dimension):
                 else:
                     images5.append(1. - img / 255.)
 
-                if isPositive:
-                    #print("Label added:", filename)
-                    a = [1., 0.]
-                    labels.append(a)
-                else:
-                    a = [0., 1.]
-                    labels.append(a)
+        if isPositive:
+            labels0 = np.ones((length), dtype=np.int)
+            labels1 = np.ones((length), dtype=np.int)
+            labels2 = np.ones((length), dtype=np.int)
+            labels3 = np.ones((length), dtype=np.int)
+            labels4 = np.ones((length), dtype=np.int)
+            labels5 = np.ones((length), dtype=np.int)
+        else:
+            labels0 = np.append(labels0, np.zeros((length), dtype=np.int), axis=0 )
+            labels1 = np.append(labels1, np.zeros((length), dtype=np.int), axis=0 )
+            labels2 = np.append(labels2, np.zeros((length), dtype=np.int), axis=0 )
+            labels3 = np.append(labels3, np.zeros((length), dtype=np.int), axis=0 )
+            labels4 = np.append(labels4 , np.zeros((length), dtype=np.int), axis=0 )
+            labels5 = np.append(labels5, np.zeros((length), dtype=np.int), axis=0 )
+
+            # y_vec_side = np.append(y_vec_side, np.zeros((length), dtype=np.int), axis=0 )
+            # y_vec_front = np.append(y_vec_front, np.zeros((length), dtype=np.int), axis=0 )
+
                     #print("Negative Label added:", filename)
 
     images0 = np.array(images0)
@@ -97,13 +113,22 @@ def load(dimension):
     np.random.shuffle(images5)
 
     np.random.seed(seed)
-    np.random.shuffle(labels)
+    np.random.shuffle(labels0)
+    np.random.seed(seed)
+    np.random.shuffle(labels1)
+    np.random.seed(seed)
+    np.random.shuffle(labels2)
+    np.random.seed(seed)
+    np.random.shuffle(labels3)
+    np.random.seed(seed)
+    np.random.shuffle(labels4)
+    np.random.seed(seed)
+    np.random.shuffle(labels5)
 
     images = [images0, images1, images2, images3, images4, images5]
-    
+    labels = [labels0, labels1, labels2, labels3, labels4, labels5]
     #print(labels)
     return images, labels
-
 
 # def runtime_load_test():
 #     import time
@@ -113,5 +138,3 @@ def load(dimension):
 #     #print(imagesTop.shape[0])
 
 
-#images, labels = load(64)
-#print(images0)
