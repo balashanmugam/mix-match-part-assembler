@@ -22,7 +22,6 @@ chair_dir_paths = list(map(
     os.listdir(in_dir)
 ))
 
-
 def get_objs_from_json(chair_json):
     if "objs" in chair_json:
         return chair_json["objs"]
