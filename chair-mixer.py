@@ -76,12 +76,6 @@ def fix_chair_translation(back_mesh, base_mesh, seat_mesh):
     y_translation = seat_middle[1] - get_bottom_center(back_mesh.bounds)[1]
     back_mesh.apply_translation((0, y_translation + random_translation[1], random_translation[2]))
 
-    # # Lower back part
-    # back_translation = (
-    #     0, -back_mesh.bounds[0][1] + seat_mesh.bounds[1][1] - 0.04, 0
-    # )
-    # back_mesh.apply_translation(back_translation)
-
 
 def get_x_length(bounds):
     return np.linalg.norm((bounds[0][0], bounds[1][1], bounds[1][2]) - bounds[1])
@@ -92,9 +86,6 @@ def get_z_length(bounds):
 
 
 def fix_chair_scale(back_mesh, base_mesh, seat_mesh):
-    # delta_xz_seat = seat_mesh.bounds[1] - seat_mesh.bounds[0]
-    # delta_xz_base = base_mesh.bounds[1] - base_mesh.bounds[0]
-    # scale = delta_xz_seat / delta_xz_base
 
     # scale back
     random_scale = (random.random() - 0.5) / 2  # between -0.25 and 0.25
@@ -160,6 +151,8 @@ def create_chair(name):
 
     fix_chair_scale(back_mesh, base_mesh, seat_mesh)
     fix_chair_translation(back_mesh, base_mesh, seat_mesh)
+
+    # Uncomment to break the chairs
     # break_chairs(back_mesh, base_mesh, seat_mesh)
 
     mesh = trimesh.util.concatenate([base_mesh, back_mesh, seat_mesh])
