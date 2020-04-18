@@ -12,6 +12,7 @@ more negative samples based on the given meshes.
 '''
 VIEWS = 6  # Total views
 
+# loads the dataset from the folder and creates labels
 def load(dimension):
     # list for each view
     images0 = []
@@ -32,8 +33,8 @@ def load(dimension):
 
     ls = 0
 
-    for id, folder in enumerate(["D:/cmpt361/RayTracerAssignment/mix-match-part-assembler/all-chairs/models/good/",
-                                 "D:/cmpt361/RayTracerAssignment/mix-match-part-assembler/all-chairs/models/bad/"]):
+    for id, folder in enumerate(["./all-chairs/models/good/",
+                                 "./all-chairs/models/bad/"]):
         isPositive = not isPositive
 
         length = (len(os.listdir(folder)) // VIEWS ) 
@@ -41,13 +42,13 @@ def load(dimension):
 
         files = os.listdir((folder))
         files = sorted(files)
-        #print(files)
 
         for filename in files:
 
             view = int(filename.split("_")[1].split('.')[0])
             view = view % VIEWS
 
+            # because the images have 1 channel.
             img = cv2.imread(folder+filename, cv2.IMREAD_GRAYSCALE)
 
             if img is not None:
@@ -78,11 +79,6 @@ def load(dimension):
             labels3 = np.append(labels3, np.zeros((length), dtype=np.int), axis=0 )
             labels4 = np.append(labels4 , np.zeros((length), dtype=np.int), axis=0 )
             labels5 = np.append(labels5, np.zeros((length), dtype=np.int), axis=0 )
-
-            # y_vec_side = np.append(y_vec_side, np.zeros((length), dtype=np.int), axis=0 )
-            # y_vec_front = np.append(y_vec_front, np.zeros((length), dtype=np.int), axis=0 )
-
-                    #print("Negative Label added:", filename)
 
     images0 = np.array(images0)
     images1 = np.array(images1)
@@ -126,16 +122,8 @@ def load(dimension):
     np.random.seed(seed)
     np.random.shuffle(labels5)
 
+    # making a list so it's easier to read
     images = [images0, images1, images2, images3, images4, images5]
     labels = [labels0, labels1, labels2, labels3, labels4, labels5]
-    #print(labels)
+
     return images, labels
-
-# def runtime_load_test():
-#     import time
-#     start_time = time.time()
-#     images, labels = load(56)
-#     print("--- %s min ---" % ((time.time() - start_time) / 60))
-#     #print(imagesTop.shape[0])
-
-
