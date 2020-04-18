@@ -1,13 +1,15 @@
-import numpy as np
-import tensorflow as tf
+#images, labels = load(64)
+#print(images0)
+# import numpy as np
+# import tensorflow as tf
 import chairs_dataset
-import model as myvgg
+# import model as myvgg
 
 
 #tf.logging.set_verbosity(tf.logging.INFO)
 
 #how many samples will be part of the train slice, the rest will be test data
-train_slice = 0.8
+train_slice = 0.75
 
 #load chairs dataset
 images, labels = chairs_dataset.load(64)
@@ -72,28 +74,19 @@ for view in [0, 1, 2, 3, 4, 5]:
         model_fn=vgg, model_dir="checkpoint/"+str(view)+"/")
 
     tensors_to_log = {"probabilities": "softmax_tensor"}
-    print(id)
-    train_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": train_images[id]},
-                                                                  y=train_labels[id],
-                                                                  num_epochs=10,
+
+    train_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": np.array(train_images[id])},
+                                                                  y=np.array(train_labels[id]),
+                                                                  num_epochs=20,
                                                                   shuffle=True)
 
     # logging_hook = tf.estimator.LoggingTensorHook(
     #     tensors=tensors_to_log, every_n_iter=2)
-
-    train_spec = tf.estimator.TrainSpec(
-    train_input_fn)
-
-    eval_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": test_images[id]},
-                                                                 y=test_labels[id],
+    eval_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": np.array(test_images[id])},
+                                                                 y=np.array(test_labels[id]),
                                                                  num_epochs=1,
                                                                  shuffle=False)
-    eval_spec = tf.estimator.EvalSpec(
-        eval_input_fn
-    )
-    classifier.train(train_input_fn)
-    # results = tf.estimator.train_and_evaluate(
-    #     classifier, train_spec,eval_spec
-    # )
+    classifier.train(input_fn=train_input_fn, steps=10000)
+
     eval_results = classifier.evaluate(input_fn=eval_input_fn)
     print(eval_results)
