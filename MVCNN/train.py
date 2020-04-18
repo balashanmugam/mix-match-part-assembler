@@ -1,5 +1,3 @@
-#images, labels = load(64)
-#print(images0)
 import numpy as np
 import tensorflow as tf
 import chairs_dataset
