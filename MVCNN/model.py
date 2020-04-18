@@ -8,9 +8,6 @@ import tensorflow as tf
 import chairs_dataset
 import os 
 import sys 
-#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-
-#tf.logging.set_verbosity(tf.logging.INFO)
 
 def vgg(features, labels, mode):
     # In   put layer, change 56 to whatever the dimensions of the input images are
@@ -45,9 +42,6 @@ def vgg(features, labels, mode):
 
     conv7 = tf.compat.v1.layers.conv2d_transpose(inputs=conv6, filters=32, kernel_size=[3, 3], padding='same',
                                                  activation=tf.nn.relu)
-    # Pooling Layer #2
-    # pool3 = tf.compat.v1.layers.max_pooling2d(inputs=conv6, pool_size=[2, 2], strides=2)
-
     # Dense Layer
     pool2_flat = tf.reshape(conv7, [-1, 16 * 16 * 32])
     dense = tf.compat.v1.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)

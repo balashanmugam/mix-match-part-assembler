@@ -1,12 +1,9 @@
 #images, labels = load(64)
 #print(images0)
-# import numpy as np
-# import tensorflow as tf
+import numpy as np
+import tensorflow as tf
 import chairs_dataset
-# import model as myvgg
-
-
-#tf.logging.set_verbosity(tf.logging.INFO)
+from model import vgg
 
 #how many samples will be part of the train slice, the rest will be test data
 train_slice = 0.75
@@ -52,6 +49,7 @@ train_labels.append(l5[:sliceId])
 
 test_images = []
 test_labels = []
+
 #then the rest are test images and labels
 test_images.append(i0[sliceId:])
 test_images.append(i1[sliceId:])
@@ -67,6 +65,7 @@ test_labels.append(l3[sliceId:])
 test_labels.append(l4[sliceId:])
 test_labels.append(l5[sliceId:])
 
+# train the model
 for view in [0, 1, 2, 3, 4, 5]:
     id = [0, 1, 2, 3, 4, 5].index(view)
 
@@ -79,9 +78,6 @@ for view in [0, 1, 2, 3, 4, 5]:
                                                                   y=np.array(train_labels[id]),
                                                                   num_epochs=20,
                                                                   shuffle=True)
-
-    # logging_hook = tf.estimator.LoggingTensorHook(
-    #     tensors=tensors_to_log, every_n_iter=2)
     eval_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": np.array(test_images[id])},
                                                                  y=np.array(test_labels[id]),
                                                                  num_epochs=1,

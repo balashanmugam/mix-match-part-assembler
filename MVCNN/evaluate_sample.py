@@ -4,12 +4,10 @@ import os
 import cv2
 from model import vgg
 
-
-#tf.logging.set_verbosity(tf.logging.INFO)
 VIEWS = 6  # Total views
 
+# loads the evaluation images
 def load_eval(dimension):
-
     images0 = []
     images1 = []
     images2 = []
@@ -18,16 +16,13 @@ def load_eval(dimension):
     images5 = []
 
     ls = 200
-    folder = "D:/cmpt361/RayTracerAssignment/mix-match-part-assembler/MVCNN/Data/images/c/" # change it
+
+    # change  before running
+    folder = "./MVCNN/Data/images/c/"
 
     length = len(os.listdir(folder)) // VIEWS
-    print(length)
-    print(len(os.listdir(folder)))
-    #ls += length
-
     files = os.listdir((folder))
     files = sorted(files)
-    # print(files)
 
     for filename in files:
 
@@ -36,9 +31,6 @@ def load_eval(dimension):
         view = view % VIEWS
 
         img = cv2.imread(folder + filename, cv2.IMREAD_GRAYSCALE)
-
-        #This relies on the files being loaded in order. For that to happen, the 0 padding in the file name is crucial.
-        #If you do not have that, then you need to change the logic of this loop.
         if img is not None:
             if view == 0:
                 images0.append(img / 255.)
@@ -72,17 +64,9 @@ def load_eval(dimension):
 
     return images
 
-# def main(*argv):
 
 #load chairs dataset
 test_images = load_eval(64)
-
-
-# test_images = {}
-# #then the rest are test images and labels
-# test_images["Top"] = imagesTop
-# test_images["Front"] = imagesFront
-# test_images["Side"] = imagesSide
 
 test_evaluations = [[], [], [], [], [], []]
 
@@ -92,33 +76,16 @@ for id, view in enumerate([0,1,2,3,4,5]):
     eval_input_fn = tf.compat.v1.estimator.inputs.numpy_input_fn(x={"x": np.array(test_images[id])},
                                                        num_epochs=1,
                                                        shuffle=False)
-    print(id)
-    #The line below returns a generator that has the probability that the tested samples are Positive cases or Negative cases
     eval_results = classifier.predict(input_fn=eval_input_fn)
 
-    #You need to iterate over the generator returned above to display the actual probabilities
-    #This line should print something like {'classes': 0, 'probabilities': array([0.91087427, 0.08912573])}
-    #the first element of 'probabilities' is the correlation of input with the Negative samples. The second element means positive.
-    #If you evaluate multiple samples, just keep iterating over the eval_results generator.
-    #eval_instance = next(eval_results)
-    #print(eval_instance)
-
-    # This is how you extract the correlation to the positive class of the first element in your evaluation folder
     for eval in eval_results:
         #print("probability that this instance is positive is %3.2f " % eval['probabilities'][1])
         test_evaluations[id].append(eval['probabilities'][1])
 
-#the probability that the chair is a positive example is given by the minimum of the probabilities from each of the three views
-#in the default configuration sent, the first ten chairs should be negatives (low value) and the ten last chairs should be positives (high value)
-#as can be seen in this quick evaluation, there is roon for inprovement in the algorithm
 evaluation_chairs = np.amin(test_evaluations, axis=0)
+
+# print results
 print(len(evaluation_chairs))
 print("______")
 print (np.where(evaluation_chairs > 0.99))
-
 print(np.sort(evaluation_chairs))
-
-# if __name__ == "__main__":
-#     # Add ops to save and restore all the variables.
-#     #saver = tf.train.Saver()
-#     tf.app.run()
