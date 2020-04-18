@@ -1,7 +1,14 @@
 # mix-match-part-assembler
 Course project for CMPT 464/764
 
+## Running the mixer
 
+Change the input and output directories at the top of the file then run it with
+
+python chair-mixer.py
+To create images change the settings at the top of the file then run
+
+python create-images.py
 
 ## How to run scorer part of the code
 
